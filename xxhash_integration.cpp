@@ -20,7 +20,6 @@ void computeHashScalar(const std::string& input) {
 
 #if defined(SIMD_X86)
 void computeHashSIMD(const std::string& input) {
-    // Process in chunks of 32 bytes using AVX2
     const char* data = input.c_str();
     size_t size = input.size();
     size_t chunkSize = 32;
@@ -28,14 +27,15 @@ void computeHashSIMD(const std::string& input) {
 
     for (size_t i = 0; i < size; i += chunkSize) {
         __m256i chunk = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(data + i));
-        hash ^= XXH32(reinterpret_cast<const char*>(&chunk), chunkSize, 0);
+        char buffer[32];
+        _mm256_storeu_si256(reinterpret_cast<__m256i*>(buffer), chunk);
+        hash ^= XXH32(buffer, chunkSize, 0);
     }
 
     std::cout << "AVX2 Hash of input: " << hash << std::endl;
 }
 #elif defined(SIMD_ARM)
 void computeHashSIMD(const std::string& input) {
-    // Process in chunks of 16 bytes using NEON
     const char* data = input.c_str();
     size_t size = input.size();
     size_t chunkSize = 16;
@@ -43,7 +43,9 @@ void computeHashSIMD(const std::string& input) {
 
     for (size_t i = 0; i < size; i += chunkSize) {
         uint8x16_t chunk = vld1q_u8(reinterpret_cast<const uint8_t*>(data + i));
-        hash ^= XXH32(reinterpret_cast<const char*>(&chunk), chunkSize, 0);
+        char buffer[16];
+        memcpy(buffer, &chunk, sizeof(chunk));
+        hash ^= XXH32(buffer, chunkSize, 0);
     }
 
     std::cout << "NEON Hash of input: " << hash << std::endl;

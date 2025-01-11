@@ -2,6 +2,6 @@
 #define ENVIRONMENT_SETUP_H
 
 // Function declaration for environment setup
-void environment_setup();
+void setup_environment();
 
 #endif // ENVIRONMENT_SETUP_H

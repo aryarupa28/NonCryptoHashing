@@ -1,43 +1,63 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <thread>
 #include "environment_setup.h"
-
-// Declare external functions (remove headers if they don't exist)
-extern void environment_setup();
-extern void hash_data(const std::vector<std::string>& data);
-extern void simd_optimized_hash(const std::vector<std::string>& data);
-extern void multithreaded_hash(const std::vector<std::string>& data);
-extern void ksm_simulation();
-extern void run_benchmarks();
+#include "deduplication.h"
+#include "ksm_simulation.h"
+#include "benchmark.h"
+#include "parallel_hashing.h"
+#include "dataset_loader.h"  // Include this header for dataset loading
+#include <iostream>
+#include <unordered_map>
+#include <vector>
 
 int main() {
-    std::cout << "Initializing Non-Crypto Hashing System...\n";
+    std::string dataset_path = "external_dataset.txt";
 
-    // Step 1: Environment setup
-    std::cout << "Setting up environment...\n";
-    environment_setup();
+    // Step 1: Environment Setup
+    setup_environment();  // Ensure implementation exists in environment_setup.cpp
 
-    // Step 2: Generate test data
-    size_t num_elements = 100000; // Number of data elements
-    size_t element_size = 1024;   // Size of each element in bytes
-    std::vector<std::string> data(num_elements, std::string(element_size, 'A'));
+    // Step 2: Load Dataset
+    auto dataset = load_dataset(dataset_path);
+    if (dataset.empty()) {
+        std::cerr << "Dataset is empty or could not be loaded!" << std::endl;
+        return 1;
+    }
 
-    // Step 3: Execute core functionality
-    std::cout << "Executing hashing and optimization steps...\n";
-    hash_data(data);
-    simd_optimized_hash(data);
-    multithreaded_hash(data);
+    // Perform deduplication and count duplicates and memory savings
+    std::cout << "Starting deduplication..." << std::endl;
+   auto [deduplicated_data, duplicate_count, memory_saved] = deduplicate_and_count(dataset);
 
-    // Step 4: Simulate KSM
-    std::cout << "Simulating Kernel Same-page Merging (KSM)...\n";
-    ksm_simulation();
 
-    // Step 5: Benchmark and analyze performance
-    std::cout << "Running benchmarks...\n";
-    run_benchmarks();
+    // Print the deduplicated data
+    std::cout << "\nDeduplicated Data:" << std::endl;
+    for (const auto& data : deduplicated_data) {  // Use the correct deduplicated dataset
+        std::cout << data << std::endl;
+    }
 
-    std::cout << "Integration complete. System is ready for use.\n";
+    // Save the deduplicated data to a file
+    save_deduplicated_data("deduplicated_output.txt", deduplicated_data);
+
+    // Display the statistics only once
+    std::cout << "\nTotal Pages: " << dataset.size() << std::endl;
+    std::cout << "Unique Pages: " << dataset.size() - duplicate_count << std::endl;
+    std::cout << "Duplicate Pages: " << duplicate_count << std::endl;
+    // Display the memory saved, in bytes if it's less than 1 KB
+if (memory_saved < 1024) {
+    std::cout << "Memory Saved: " << memory_saved << " bytes" << std::endl;
+} else {
+    std::cout << "Memory Saved: " << (memory_saved / 1024) << " KB" << std::endl;
+}
+
+
+
+
+    // Step 6: Simulate Kernel Same-page Merging (KSM)
+    simulate_ksm(deduplicated_data);  // Pass the deduplicated dataset to the KSM simulation function
+
+    // Step 8: Run Benchmarks
+    run_benchmarks();  // Ensure benchmarking logic is correctly implemented
+
+    // Step 9: Test Parallel Hashing
+    test_parallel_hashing(deduplicated_data);  // Test parallel hashing with the deduplicated dataset
+
+    std::cout << "Integration complete. System is ready for use." << std::endl;
     return 0;
 }

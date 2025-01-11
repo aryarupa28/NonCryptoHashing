@@ -1,7 +1,8 @@
 #include <iostream>
+#include "environment_setup.h"
 
 // Function to set up the environment
-void environment_setup() {
+void setup_environment() {
     std::cout << "Performing environment setup...\n";
 
     // Example setup steps (add relevant logic as needed)
