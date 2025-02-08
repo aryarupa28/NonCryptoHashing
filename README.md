@@ -1,3 +1,2 @@
-# SRM_24OD24SRM_Non-Crypto_Hashing_R_and_D_Duplicate_Content_Detection_for_storage_memory
-SRIB-PRISM Program
+Non-Crypto_Hashing_R_and_D_Duplicate_Content_Detection_for_storage_memory
 
